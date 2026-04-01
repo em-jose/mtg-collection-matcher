@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AppProvider } from "./context/AppContext";
-import { Header } from "./components/Layout/Header";
-import { Footer } from "./components/Layout/Footer";
-import { HomePage } from "./pages/HomePage";
-import { ResultsPage } from "./pages/ResultsPage";
+import { AppProvider } from "@context/AppContext";
+import { Header } from "@components/Layout/Header";
+import { Footer } from "@components/Layout/Footer";
+import { HomePage } from "@pages/HomePage";
+import { ResultsPage } from "@pages/ResultsPage";
 
 function App() {
   return (
