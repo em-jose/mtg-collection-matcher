@@ -81,17 +81,35 @@ function loadSavedCollection(): string {
   }
 }
 
+function loadSavedDecks(): DeckInput[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY_DECKS);
+    if (saved) {
+      const parsed = JSON.parse(saved) as DeckInput[];
+      if (parsed.length > 0) return parsed;
+    }
+  } catch {
+    /* ignore */
+  }
+  return [{ id: generateDeckId(), name: "", content: "" }];
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
-  const canCompare = true;
   const [collectionText, setCollectionText] = useState(loadSavedCollection);
   const [collection, setCollection] = useState<UserCollection | null>(() => {
     const saved = loadSavedCollection();
     return saved ? parseCollection(saved) : null;
   });
-  const [deckInputs, setDeckInputs] = useState<DeckInput[]>([]);
+  const [deckInputs, setDeckInputs] = useState<DeckInput[]>(loadSavedDecks);
   const [results, setResults] = useState<DeckMatchResult[] | null>(null);
   const [sharedCards, setSharedCards] = useState<SharedCard[]>([]);
   const [combinedMissing, setCombinedMissing] = useState<Card[]>([]);
+  const [prices, setPrices] = useState<Map<string, CardPrice>>(new Map());
+  const [pricesLoading, setPricesLoading] = useState(false);
+  const [pricesProgress, setPricesProgress] = useState({ loaded: 0, total: 0 });
+  const [currency, setCurrencyState] = useState<Currency>(() => {
+    return (localStorage.getItem(STORAGE_KEY_CURRENCY) as Currency) || "eur";
+  });
 
   // Persist collection text to localStorage
   useEffect(() => {
@@ -167,21 +185,80 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const runComparison = useCallback(() => {
+    if (!collection) return;
+
+    const parsedDecks = deckInputs
+      .filter((d) => d.content.trim())
+      .map((d) => parseDeck(d.content, d.id, d.name || undefined));
+
+    if (parsedDecks.length === 0) return;
+
+    const matchResults = matchAllDecks(parsedDecks, collection);
+    const shared = findSharedCards(parsedDecks, collection);
+    const combined = buildCombinedMissingList(matchResults);
+
+    setResults(matchResults);
+    setSharedCards(shared);
+    setCombinedMissing(combined);
+  }, [collection, deckInputs]);
+
+  const setCurrency = useCallback((c: Currency) => {
+    setCurrencyState(c);
+    localStorage.setItem(STORAGE_KEY_CURRENCY, c);
+  }, []);
+
+  const resetResults = useCallback(() => {
+    setResults(null);
+    setSharedCards([]);
+    setCombinedMissing([]);
+    setPrices(new Map());
+  }, []);
+
+  const resetAll = useCallback(() => {
+    setCollectionText("");
+    setCollection(null);
+    setDeckInputs([{ id: generateDeckId(), name: "", content: "" }]);
+    setResults(null);
+    setSharedCards([]);
+    setCombinedMissing([]);
+    setPrices(new Map());
+    localStorage.removeItem(STORAGE_KEY_COLLECTION);
+    localStorage.removeItem(STORAGE_KEY_DECKS);
+  }, []);
+
+  const canCompare = Boolean(
+    collection &&
+    collection.cards.length > 0 &&
+    deckInputs.some((d) => d.content.trim()),
+  );
+
   return (
     <AppContext.Provider
       value={{
-        canCompare,
         collectionText,
+        collection,
         deckInputs,
         results,
         sharedCards,
         combinedMissing,
-        setDeckInputs,
+        prices,
+        pricesLoading,
+        pricesProgress,
+        currency,
         setCollectionText,
         importCollection,
         addDeckInput,
         removeDeckInput,
         updateDeckInput,
+        runComparison,
+        setCurrency,
+        setPrices,
+        setPricesLoading,
+        setPricesProgress,
+        resetResults,
+        resetAll,
+        canCompare,
       }}
     >
       {children}
@@ -191,7 +268,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
 export function useApp(): AppContextType {
   const context = useContext(AppContext);
-
   if (!context) {
     throw new Error("useApp must be used within an AppProvider");
   }
