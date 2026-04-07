@@ -6,8 +6,14 @@ import { ConfirmModal } from "@components/ui/ConfirmModal";
 import { useApp } from "@context/AppContext";
 
 export function HomePage() {
-  const { canCompare, runComparison, resetAll, collectionText, deckInputs } =
-    useApp();
+  const {
+    canCompare,
+    runComparison,
+    resetAll,
+    loadExampleData,
+    collectionText,
+    deckInputs,
+  } = useApp();
   const navigate = useNavigate();
   const [showResetModal, setShowResetModal] = useState(false);
 
@@ -51,7 +57,14 @@ export function HomePage() {
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center justify-center gap-4 pb-8">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pb-8">
+        <button
+          onClick={loadExampleData}
+          className="px-6 py-3 text-sm font-medium bg-slate-800 text-white hover:bg-slate-700 border border-slate-700 rounded-xl transition-all"
+        >
+          Load example data
+        </button>
+
         {hasData && (
           <button
             onClick={() => setShowResetModal(true)}

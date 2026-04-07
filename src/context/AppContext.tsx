@@ -22,6 +22,7 @@ import {
   findSharedCards,
   matchAllDecks,
 } from "@utils/deckMatcher";
+import { EXAMPLE_COLLECTION_DATA, EXAMPLE_DECKS_DATA } from "@data/exampleData";
 
 const STORAGE_KEY_COLLECTION = "mtg-collection";
 const STORAGE_KEY_DECKS = "mtg-decks";
@@ -64,6 +65,7 @@ interface AppContextType extends AppState {
   setPricesProgress: (progress: { loaded: number; total: number }) => void;
   resetResults: () => void;
   resetAll: () => void;
+  loadExampleData: () => void;
   canCompare: boolean;
 }
 
@@ -185,6 +187,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const loadExampleData = useCallback(() => {
+    importCollection(EXAMPLE_COLLECTION_DATA);
+    setDeckInputs(
+      EXAMPLE_DECKS_DATA.map((deck) => ({
+        id: generateDeckId(),
+        name: deck.name,
+        content: deck.content,
+      })),
+    );
+    setResults(null);
+    setSharedCards([]);
+    setCombinedMissing([]);
+    setPrices(new Map());
+  }, [importCollection]);
+
   const runComparison = useCallback(() => {
     if (!collection) return;
 
@@ -258,6 +275,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setPricesProgress,
         resetResults,
         resetAll,
+        loadExampleData,
         canCompare,
       }}
     >

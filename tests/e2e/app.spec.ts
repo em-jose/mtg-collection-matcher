@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(__dirname, '..', 'data');
+const dataDir = path.join(__dirname, '..', '..', 'src', 'data', 'fixtures');
 const monoBlueText = fs.readFileSync(path.join(dataDir, 'mono_blue_terror.txt'), 'utf-8');
 const grixisAffinityText = fs.readFileSync(path.join(dataDir, 'grixis_affinity.txt'), 'utf-8');
 
