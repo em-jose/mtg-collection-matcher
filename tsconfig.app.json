@@ -23,14 +23,17 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "baseUrl": ".",
+
+    /* Path aliases */
     "paths": {
-      "@components/*": ["src/components/*"],
-      "@context/*": ["src/context/*"],
-      "@pages/*": ["src/pages/*"],
-      "@services/*": ["src/services/*"],
-      "@utils/*": ["src/utils/*"],
-      "@types": ["src/types"]
+      "@components/*": ["./src/components/*"],
+      "@context/*": ["./src/context/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@services/*": ["./src/services/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@types": ["./src/types"],
+      "@types/*": ["./src/types/*"]
     }
   },
   "include": ["src"]
